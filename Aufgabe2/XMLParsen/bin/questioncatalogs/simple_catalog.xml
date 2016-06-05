@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>  <!-- optional XML-Prolog -->
+<catalog>
+  <question>
+    <title text="Welcher Mechanismus kann unter Unix zur Kommunikation über das Netzwerk verwendet werden?"/>
+    <answers>
+      <answer1 correct="true" answertext="Sockets"/>
+      <answer2 correct="false" answertext="Message Queues"/>
+      <answer3 correct="false" answertext="Pipes"/>
+      <answer4 correct="false" answertext="Semaphore"/>
+    </answers>
+  </question>
+
+  <question>
+    <title text="Wetten, dass Sie es nicht schaffen, hier keine Antwort auszuwählen..."/>
+    <answers>
+      <answer1 correct="false" answertext="Das wollen wir doch mal sehen!"/>
+      <answer2 correct="false" answertext="Kann schon sein."/>
+      <answer3 correct="false" answertext="Mir doch egal."/>
+      <answer4 correct="false" answertext="Was soll denn dieser Unsinn?"/>
+    </answers>
+  </question>
+
+  <question>
+    <title text="Welche dieser Länder liegen in Europa?"/>
+    <answers>
+      <answer1 correct="true" answertext="Frankreich"/>
+      <answer2 correct="true" answertext="Deutschland"/>
+      <answer3 correct="true" answertext="Spanien"/>
+      <answer4 correct="false" answertext="Argendtinien"/>
+    </answers>
+  </question>
+
+  <question>
+    <title text="Die Quadratwurzel von 100 ist:"/>
+    <answers>
+      <answer1 correct="true" answertext="10"/>
+      <answer2 correct="false" answertext="2.76"/>
+      <answer3 correct="false" answertext="5"/>
+      <answer4 correct="false" answertext="1"/>
+    </answers>
+  </question>
+
+
+  <question>
+    <title text="Welche der folgenden Datentypen gibt es in C89?"/>
+    <answers>
+      <answer1 correct="true" answertext="int"/>
+      <answer2 correct="true" answertext="char"/>
+      <answer3 correct="true" answertext="unsigned long"/>
+      <answer4 correct="true" answertext="float"/>
+    </answers>
+  </question>
+</catalog>

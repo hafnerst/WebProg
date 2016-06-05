@@ -1,0 +1,13 @@
+body {
+    font-family: Helvetica;
+    color: black;
+    border-top: 5px;
+    background-color: white;
+}
+
+#login{
+        position: relative;
+        left:25%;
+        top:30%;
+        font-size: 14pt;
+}

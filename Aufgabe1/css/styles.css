@@ -1,0 +1,101 @@
+body {
+    font-family: Helvetica;
+    color: black;
+    border-top: 5px;
+    background-color: #f8a316;
+}
+
+#div_all {
+         position:relative;
+         margin:auto;
+         width:80%;
+         height:850px;
+         border-color: #424242;
+         border-width: 2px;
+         border-style: solid;
+         border-radius: 20px;
+         background-color:#f0f0f0;
+}
+
+#heading {
+         padding:1%;
+         border-color: #424242;
+         border-width: 2px;
+         border-style: solid;
+         border-radius: 20px;
+         margin: 2%;
+         background-color:white;
+}
+
+#topic{
+        position: relative;
+        font-size: 20pt;
+}
+
+#main{
+         float: left;
+         position:relative;
+         width:55%;
+         height:60%;
+         border-color: #424242;
+         border-width: 2px;
+         border-style: solid;
+         border-radius: 20px;
+         margin: 2%;
+         padding:1%;
+         background-color:white;
+}
+
+#login{
+        position: relative;
+        left:25%;
+        top:30%;
+        font-size: 14pt;
+}
+
+#rightside{
+        float:right;
+        position: relative;
+        width: 30%;
+        height:60%;
+        margin: 2%;
+}
+
+#catalogs{
+         position: relative;
+         margin: auto;
+         padding:5%;
+         border-color: #424242;
+         border-width: 2px;
+         border-style: solid;
+         border-radius: 20px;
+         background-color:white;
+}
+
+#catalog{
+         background-color:#f8a316;
+}
+
+#highscore{
+         position: relative;
+         margin:auto;
+         margin-top: 5%;
+         padding:5%;
+         border-color: #424242;
+         border-width: 2px;
+         border-style: solid;
+         border-radius: 20px;
+         background-color:white;
+}
+
+#foot {
+         clear: both;
+         position: relative;
+         padding:1%;
+         border-color: #424242;
+         border-width: 2px;
+         border-style: solid;
+         border-radius: 20px;
+         margin: 2%;
+         background-color:white;
+}

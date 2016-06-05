@@ -1,0 +1,113 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<catalog>
+  <question>
+    <title text="Ein Thread soll auf ein durch einen anderen Thread ausgelöstes Ereignis warten. Welcher Mechanismus oder welche Mechanismen sind dafür geeignet?"/>
+    <answers>
+      <answer1 correct="true" answertext="Semaphore"/>
+      <answer2 correct="false" answertext="Mutexe"/>
+      <answer3 correct="false" answertext="Sleep"/>
+      <answer4 correct="false" answertext="Timer"/>
+    </answers>
+  </question>
+
+  <question>
+    <title text="Der Systemaufruf fork..."/>
+    <answers>
+      <answer1 correct="true" answertext="...erzeugt einen neuen Prozess, der das gleiche Programm ausführt."/>
+      <answer2 correct="false" answertext="...erzeugt einen neuen Prozess, der ein anderes Programm ausführt."/>
+      <answer3 correct="false" answertext="...erzeugt einen neuen Thread."/>
+      <answer4 correct="false" answertext="...ist das logische Gegenstück zum Aufruf knife."/>
+    </answers>
+  </question>
+
+  <question>
+    <title text="In einem Signalhandler..."/>
+    <answers>
+      <answer1 correct="true" answertext="...dürfen nur bestimmte Funktionen aufgerufen werden."/>
+      <answer2 correct="false" answertext="...kann man problemlos alles machen, was man auch im regulären Programmcode macht."/>
+      <answer3 correct="false" answertext="...dürfen keine Fließkommaoperationen durchgeführt werden."/>
+      <answer4 correct="false" answertext="...ist nur der Systemaufruf write verboten."/>
+    </answers>
+  </question>
+
+  <question>
+    <title text="Sie möchten eine Datenstruktur vor gleichzeitigem Zugriff aus mehreren Threads schützen. Welcher Mechanismus oder welche Mechanismen sind dafür geeignet?"/>
+    <answers>
+      <answer1 correct="true" answertext="Semaphore"/>
+      <answer2 correct="true" answertext="Mutexe"/>
+      <answer3 correct="false" answertext="Sleep"/>
+      <answer4 correct="false" answertext="Timer"/>
+    </answers>
+  </question>
+
+
+  <question>
+    <title text="Es soll darauf gewartet werden, dass Daten eintreffen, allerdings nur eine bestimmte Zeit. Wie kann man das umsetzen?"/>
+    <answers>
+      <answer1 correct="true" answertext="mit dem Systemaufruf select"/>
+      <answer2 correct="false" answertext="durch einen zusätzlichen Timeout-Parameter bei read oder recv"/>
+      <answer3 correct="false" answertext="gar nicht"/>
+      <answer4 correct="false" answertext="durch Setzen des Timeout-Status mit fcntl"/>
+    </answers>
+  </question>
+
+  <question>
+    <title text="Mit welchem Systemaufruf kann man den Port festlegen, auf dem ein Serverprogramm auf Verbindungen wartet?"/>
+    <answers>
+      <answer1 correct="true" answertext="bind"/>
+      <answer2 correct="false" answertext="accept"/>
+      <answer3 correct="false" answertext="setsock"/>
+      <answer4 correct="false" answertext="open"/>
+    </answers>
+  </question>
+
+  <question>
+    <title text="Während eines read-Aufrufs tritt ein Signal auf und wird durch einen Signalhandler abgearbeitet. Was passiert?"/>
+    <answers>
+      <answer1 correct="true" answertext="Der Aufruf kehrt unter Umständen mit weniger Daten als angefordert oder EINTR zurück."/>
+      <answer2 correct="false" answertext="Es werden auf jeden Fall so viele Daten gelesen wie angefordert."/>
+      <answer3 correct="false" answertext="Die Daten gehen verloren."/>
+      <answer4 correct="false" answertext="Das Programm wird in solchen Fällen vom Betriebssystem abgebrochen"/>
+    </answers>
+  </question>
+
+  <question>
+    <title text="Beim Lesen aus einer Pipe meldet der Aufruf read das Dateiende, wenn..."/>
+    <answers>
+      <answer1 correct="true" answertext="...alle Schreib-Deskriptoren für die Pipe geschlossen und alle Daten aus der Pipe gelesen wurden."/>
+      <answer2 correct="false" answertext="...der Leser ein spezielles Signal erhält."/>
+      <answer3 correct="false" answertext="...der schreibende Prozess fork aufruft."/>
+      <answer4 correct="false" answertext="...^D in die Pipe geschrieben wird."/>
+    </answers>
+  </question>
+
+  <question>
+    <title text="Welche der folgenden Resourcen werden beim Beenden eines Prozesses nicht automatisch freigegeben?"/>
+    <answers>
+      <answer1 correct="true" answertext="Shared-Memory-Bereiche"/>
+      <answer2 correct="true" answertext="Dateien"/>
+      <answer3 correct="true" answertext="benannte POSIX-Semaphore"/>
+      <answer4 correct="false" answertext="offene Filedeskriptoren"/>
+    </answers>
+  </question>
+
+  <question>
+    <title text="Welche dieser Signale können nicht abgefangen werden?"/>
+    <answers>
+      <answer1 correct="true" answertext="SIGKILL"/>
+      <answer2 correct="true" answertext="SIGSTOP"/>
+      <answer3 correct="false" answertext="SIGTERM"/>
+      <answer4 correct="false" answertext="SIGINT"/>
+    </answers>
+  </question>
+
+  <question>
+    <title text="Was ist ein Zombie-Prozess unter Unix?"/>
+    <answers>
+      <answer1 correct="true" answertext="Ein Prozess, dessen Exit-Status noch nicht mittels wait abgefragt wurde."/>
+      <answer2 correct="false" answertext="Ein Daemon-Prozess, der durch den Aufruf zombie immun gegen das KILL-Signal gemacht wurde."/>
+      <answer3 correct="false" answertext="Ein Prozess, der nur nachts gestartet werden kann."/>
+      <answer4 correct="false" answertext="Ein Computervirus."/>
+    </answers>
+  </question>
+</catalog>
