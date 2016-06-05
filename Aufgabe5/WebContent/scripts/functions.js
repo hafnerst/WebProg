@@ -4,8 +4,8 @@ var count = 0;
 window.onload = function () {
 	window.setTimeout("lauf()",75);
 
-	document.getElementById("buttonLogin").addEventListener("click", addPlayer);
-	
+	//document.getElementById("buttonLogin").addEventListener("click", addPlayer);
+	createWebsocket();
 	getCatalog();
 	console.log("in onLoad function()");
 	

@@ -1,9 +1,8 @@
 package catalog;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -16,19 +15,11 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import javax.xml.parsers.*;
 import javax.xml.transform.*;
-import javax.xml.transform.dom.*;
-import javax.xml.transform.stream.*;
-import org.xml.sax.*;
 import org.w3c.dom.*;
 
-import java.io.FileWriter;
-import java.io.IOException;
-
-import application.Player;
 import application.Quiz;
-import error.QuizError;
+import application.Catalog;
 import loader.FilesystemLoader;
 import loader.LoaderException;
 
@@ -46,11 +37,10 @@ public class CatalogList extends HttpServlet
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
 		Quiz quiz = Quiz.getInstance();
-		QuizError error = new QuizError();
 		
-		java.util.Map<String, application.Catalog> catalogMap = null;
+		Map<String, Catalog> catalogMap = null;
+
 		FilesystemLoader fileLoader = new FilesystemLoader("xml");
-		
 		quiz.initCatalogLoader(fileLoader);
 		
 		try 
@@ -63,16 +53,13 @@ public class CatalogList extends HttpServlet
 			System.out.println("Failed to load Catalogs");
 		}
 				
-		String xmlString = this.saveToXML("C:\\Users\\Steffen\\Documents\\test\\file3.xml", catalogMap);
-		
-		
-		System.out.println("result"+xmlString);
+		String xmlString = this.saveToXML(catalogMap);
 	
 		PrintWriter writer = response.getWriter();	
 		writer.print(xmlString);
 	}
 	
-	public String saveToXML(String xml, java.util.Map<String, application.Catalog> catalogMap) 
+	public String saveToXML(Map<String, Catalog> catalogMap) 
 	{
 	    Document dom = null;
 	    DOMSource domSource = null;
@@ -132,7 +119,5 @@ public class CatalogList extends HttpServlet
 	
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		doPost(request, response);
-		System.out.println("doGet aufgerufen");
 	}
 }

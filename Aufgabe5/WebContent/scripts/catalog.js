@@ -8,7 +8,7 @@ function getCatalog(){
 	        catalogListener();
 	    }
 	};
-	request.open("GET", "catalogList", true);
+	request.open("POST", "catalogList", true);
 	request.send();
 	console.log("Request gesendet");
 }
