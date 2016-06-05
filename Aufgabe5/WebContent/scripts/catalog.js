@@ -35,7 +35,6 @@ function catalogListener(){
 		}
 		
 	}
-	console.log("in catalogListener");
 }
 
 function receiveCatalog(message){

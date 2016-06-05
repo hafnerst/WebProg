@@ -21,7 +21,7 @@ public class ConnectionManager {
 	private static List<Session> tmpList = Collections.synchronizedList(new ArrayList<Session>());
 
     // Anzahl der Verbindungen besorgen
-    public static synchronized int SessionCount() { 
+    public static synchronized int getSessionCount() { 
     	return mapSessionPlayer.size();
     }
     
@@ -56,7 +56,7 @@ public class ConnectionManager {
     
     // Ausgabe aller aktiven Sessions mit Spieler
     public static synchronized void printall() {
-    	System.out.println("Anzahl Session mit Spieler: " + SessionCount());
+    	System.out.println("Anzahl Session mit Spieler: " + getSessionCount());
     	for (Entry<Session, Player> entry : mapSessionPlayer.entrySet()) {
 			System.out.println(entry.getKey() + "  /  " + entry.getValue().getName());
 		}

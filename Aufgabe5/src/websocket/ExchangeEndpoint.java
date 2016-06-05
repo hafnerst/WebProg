@@ -1,6 +1,7 @@
 package websocket;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -14,6 +15,7 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -54,7 +56,7 @@ public class ExchangeEndpoint {
 				error.put("Length", 1 + 14);
 				error.put("Subtype", "1");
 				error.put("Message", "Superuser left");
-				//sendToAllSessions(error);
+				sendToAllSessions(error);
 				
 			} else {
 				quiz.removePlayer(tmp, quizError);
@@ -76,36 +78,44 @@ public class ExchangeEndpoint {
 	
 		// Message vom Type: LoginRequest
 		if(msgType == 1) {
-			int msgLength = Integer.parseInt((String) jsonMessage.get("Length").toString());
-			if(msgLength > 0) {
-				Player tmpPlayer = quiz.createPlayer((String) jsonMessage.get("Name"), quizError);
-				if(tmpPlayer == null) { // Fehlerfall
+			if(ConnectionManager.getSessionCount() > 4)
+			{
+				System.out.println("Maximale Spielerzahl");
+			}
+			else {
+				int msgLength = Integer.parseInt((String) jsonMessage.get("Length").toString());
+				if(msgLength > 0) {
+					Player tmpPlayer = quiz.createPlayer((String) jsonMessage.get("Name"), quizError);
+					if(tmpPlayer == null) { // Fehlerfall
+						JSONObject error = new JSONObject();
+						error.put("Type", "255");
+						error.put("Length", 1 + quizError.getDescription().length());
+						error.put("Subtype", "1");
+						error.put("Message", quizError.getDescription());
+						System.out.println(error);
+						sendJSON(session, error);
+					} else { // Username in Ordnung
+						JSONObject player = new JSONObject();
+						player.put("Type", "2");
+						player.put("Length", "1");
+						player.put("ClientID", tmpPlayer.getId());
+						ConnectionManager.addSession(session, tmpPlayer);
+						ConnectionManager.removeTmpSession(session);
+						sendJSON(session, player);
+						sendPlayerlist();
+						System.out.println("Spieler erstellt");
+					}
+				} else { // kein Username eingegeben
 					JSONObject error = new JSONObject();
 					error.put("Type", "255");
-					error.put("Length", 1 + quizError.getDescription().length());
+					error.put("Length", 17);
 					error.put("Subtype", "1");
-					error.put("Message", quizError.getDescription());
-					System.out.println(error);
+					error.put("Message", "Username required");
 					sendJSON(session, error);
-				} else { // Username in Ordnung
-					JSONObject player = new JSONObject();
-					player.put("Type", "2");
-					player.put("Length", "1");
-					player.put("ClientID", tmpPlayer.getId());
-					ConnectionManager.addSession(session, tmpPlayer);
-					ConnectionManager.removeTmpSession(session);
-					sendJSON(session, player);
-
-				}
-			} else { // kein Username eingegeben
-				JSONObject error = new JSONObject();
-				error.put("Type", "255");
-				error.put("Length", 17);
-				error.put("Subtype", "1");
-				error.put("Message", "Username required");
-				sendJSON(session, error);
-			}	
+				}	
+			}
 		}
+		ConnectionManager.printall();
 	} 
 	
 	public static synchronized void sendJSON(Session session, JSONObject tmp) {
@@ -131,6 +141,30 @@ public class ExchangeEndpoint {
 			for (Session tempS : tmpSessions) {
 				sendJSON(tempS, error);
 			}
+		}
+	}
+	
+	private void sendPlayerlist() {
+		JSONObject playerList = new JSONObject();
+		playerList.put("Type", "6");
+		playerList.put("Length", ConnectionManager.getSessionCount() * 37);
+		Collection<Player> tmpPlayer = ConnectionManager.getPlayers();
+		JSONArray players = new JSONArray();
+		for(Player entry : tmpPlayer) {
+			JSONObject tmp = new JSONObject();
+			tmp.put("Spielername", entry.getName());
+			tmp.put("Punktestand", entry.getScore());
+			tmp.put("ClientID", entry.getId());
+			players.add(tmp);
+		}
+		playerList.put("Players", players);
+		
+		// Alle aktuell angemeldeten SpielerSessions durchgehen
+		Set<Session> tmpMap = ConnectionManager.getSessions();
+		for(Iterator<Session> iter = tmpMap.iterator(); iter.hasNext(); ) {
+			Session s = iter.next();
+			// PlayerList message
+			this.sendJSON(s, playerList);
 		}
 	}
 }
