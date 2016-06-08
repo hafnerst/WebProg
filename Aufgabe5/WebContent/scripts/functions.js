@@ -7,8 +7,6 @@ window.onload = function () {
 	createWebsocket();
 	getCatalog();
 	console.log("in onLoad function()");
-	
-	document.getElementById("buttonStart").addEventListener("click", nextQuestion);
 }
 
 function lauf()
@@ -18,38 +16,6 @@ function lauf()
     window.setTimeout("lauf()",75);
 }
 
-function addPlayer() {
-	if(document.getElementById("input").value != "")
-	{
-		if(count < 4)
-		{
-			var table = document.getElementById("playerTable");
-			var row = table.insertRow(1);
-			var cell1 = row.insertCell(0);
-			cell1.addEventListener("click", swapPlayers);
-			var cell2 = row.insertCell(1);
-			
-			cell1.innerHTML = document.getElementById("input").value;
-			var curId = count;
-			cell1.id = curId.toString();
-			cell2.innerHTML = "0";
-
-			count++;
-		}
-		else
-		{
-			alert("Maximale Spielerzahl erreicht!");
-		}
-	}
-	else
-	{
-		alert("Bitte Spielernamen eingeben!");
-	}
-	if(count > 1)
-	{
-		document.getElementById("buttonStart").disabled=false;
-	}
-}
 
 function nextQuestion() {	
 	var login = document.getElementById("login");
@@ -83,14 +49,4 @@ function nextQuestion() {
 	
 	var position = document.getElementById("main");
 	position.appendChild(questiondiv);
-}
-
-function swapPlayers(event) {
-	if(event.target.id < (count-1))
-	{
-		var buf = event.target.innerHTML;
-		var curID = count-1;
-		event.target.innerHTML = document.getElementById(curID.toString()).innerHTML;
-		document.getElementById(curID.toString()).innerHTML = buf;
-	}
 }

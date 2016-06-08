@@ -42,7 +42,6 @@ public class ConnectionManager {
     		if(entry.getKey().equals(session)){
     			tmp = entry.getValue();
     		}
-    		
     	}
 		return tmp;
     }

@@ -4,7 +4,7 @@ var curCat = null;
 function getCatalog(){
 	request = new XMLHttpRequest();
 	request.onreadystatechange = function() {
-	    if (request.readyState == 4 && request.status == 200) {
+	    if (request.readyState == READY && request.status == 200) {
 	        catalogListener();
 	    }
 	};
@@ -14,50 +14,33 @@ function getCatalog(){
 }
 
 function catalogListener(){
-	
-	if(request.readyState == READY){
-		
-		var xmlDoc = request.responseXML;
-		var count = 0;
-		for(var i = 0; i < (xmlDoc.childNodes.length +1); i++)
-		{
-			var catalog = xmlDoc.getElementsByTagName("name")[count];
-			var catValue = catalog.firstChild.nodeValue;
-			console.log(catValue);
-			
-		    var div = document.createElement("div");
-		    div.innerHTML = '<label class="catalog" onclick="changeCatalog(this)">'+catValue+'</label>';
-		    document.getElementById("catalogs").appendChild(div.childNodes[0]);
-		    div.innerHTML = '<br></br>'
-		    document.getElementById("catalogs").appendChild(div.childNodes[0]);
-		    
-		    count++;
-		}
-		
+	var xmlDoc = request.responseXML;
+	var count = 0;
+	for(var i = 0; i < (xmlDoc.childNodes.length +1); i++)
+	{
+		var catalog = xmlDoc.getElementsByTagName("name")[count];
+		var catValue = catalog.firstChild.nodeValue;
+		console.log(catValue);
+	    var div = document.createElement("div");
+	    div.innerHTML = '<label class="catalog" onclick="changeCatalog(this)">'+catValue+'</label>';
+	    document.getElementById("catalogs").appendChild(div.childNodes[0]);
+	    div.innerHTML = '<br></br>';
+	    document.getElementById("catalogs").appendChild(div.childNodes[0]);
+	    
+	    count++;
 	}
-}
-
-function receiveCatalog(message){
-	
-	var elements = document.getElementsByClassName("catalog");
-    var length = elements.length;
-   
-    for(var i = 0; i < length; i++)
-    {
-    	elements[i].style.backgroundColor = "";
-    	if(elements[i].innerHTML == message){
-    		elements[i].style.backgroundColor = "green";
-    	}
-    }
 }
 
 function changeCatalog(selectedCat){
-	
-	selectedCat.style.backgroundColor = "#f8a316";
-	
-	if(curCat!=null)
+	if(clientid == 0)
 	{
-		curCat.style.backgroundColor = "white";
+		selectedCat.style.backgroundColor = "#f8a316";
+		
+		if(curCat!=null)
+		{
+			curCat.style.backgroundColor = "white";
+		}
+		curCat = selectedCat;
+		sendCurCatalog();
 	}
-	curCat = selectedCat;
 }

@@ -49,6 +49,7 @@ public class FilesystemLoader implements CatalogLoader {
     private final Map<String, Catalog> catalogs =
         new HashMap<String, Catalog>();
     private final String location;
+    private String directory;
 
     public FilesystemLoader(String location) {
         this.location = location;
@@ -65,6 +66,7 @@ public class FilesystemLoader implements CatalogLoader {
         URL url = this.getClass().getClassLoader().getResource(location);
         //System.out.println("Location: "+this.getClass().getClassLoader().getResource("").getPath());
         System.out.println(url);
+        directory = url.toString();
 
         File dir;
         try {
@@ -140,9 +142,12 @@ public class FilesystemLoader implements CatalogLoader {
                 return questions;
             }
             
-            String filename = "bin\\questioncatalogs\\"+catalog.getName();
+            String filename = directory+catalog.getName();
+            System.out.println("Verzeichnis: "+ filename);
             try {
+            	System.out.println("vor SAX");
             	doc = new SAXBuilder().build( filename );	//JDOM-Dokument mit Hilfe von SAXBuilder erstellen
+            	System.out.println("nach SAX");
             }
             catch(Exception e){
     			e.printStackTrace();

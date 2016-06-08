@@ -2,13 +2,11 @@ package websocket;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TimerTask;
 
-import javax.websocket.EncodeException;
 import javax.websocket.OnClose;
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
@@ -21,13 +19,15 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import application.Player;
+import application.Question;
 import application.Quiz;
 import error.QuizError;
+import thread.TimerTaskThread;
 
 @ServerEndpoint("/chat")
 public class ExchangeEndpoint {
 	private Quiz quiz = Quiz.getInstance();
-	private QuizError quizError = new QuizError(); 
+	private QuizError quizError = new QuizError();
 	
 	//Wird beim Anmelden eines Clients aufgerufen
 	@OnOpen
@@ -40,8 +40,12 @@ public class ExchangeEndpoint {
 			catalogChange.put("Type", "5");
 			catalogChange.put("Length", quiz.getCurrentCatalog().getName().length());
 			catalogChange.put("Message", quiz.getCurrentCatalog().getName());
-			//sendToAllSessions(catalogChange);
+			sendToAllSessions(catalogChange);
 		}
+		if(ConnectionManager.getSessionCount() < 4) {
+			sendPlayerlist();
+		}
+		System.out.println("In Open Funktion");
 	}
 	
 	@OnClose
@@ -63,6 +67,7 @@ public class ExchangeEndpoint {
 				ConnectionManager.removeSession(session);
 			}
 		}
+		this.sendPlayerlist();
 	}
 
 	@OnMessage
@@ -78,7 +83,7 @@ public class ExchangeEndpoint {
 	
 		// Message vom Type: LoginRequest
 		if(msgType == 1) {
-			if(ConnectionManager.getSessionCount() > 4)
+			if(ConnectionManager.getSessionCount() >= 4)
 			{
 				System.out.println("Maximale Spielerzahl");
 			}
@@ -113,6 +118,42 @@ public class ExchangeEndpoint {
 					error.put("Message", "Username required");
 					sendJSON(session, error);
 				}	
+			}
+		}
+		//CatalogChanged
+		if(msgType == 5) {
+			JSONObject catalogChange = new JSONObject();
+			catalogChange.put("Type", "5");
+			catalogChange.put("Length", jsonMessage.get("Length").toString());
+			catalogChange.put("Message", jsonMessage.get("Message"));
+			quiz.changeCatalog(ConnectionManager.getPlayer(session), jsonMessage.get("Message").toString(), quizError);
+			sendToAllSessions(catalogChange);
+		}
+		//StartGame Message
+		if(msgType == 7) {
+			//quiz.startGame(ConnectionManager.getPlayer(session), quizError);
+			//if(quiz.startGame(ConnectionManager.getPlayer(session), quizError))
+			//{
+				JSONObject gameStarted = new JSONObject();
+				gameStarted.put("Type", "7");
+				gameStarted.put("Length", jsonMessage.get("Length").toString());
+				gameStarted.put("Message", jsonMessage.get("Message"));
+				sendToAllSessions(gameStarted);
+			/*}
+			else
+			{
+				System.out.println("Game konnte nicht gestartet werden!");
+			}*/
+		}
+		//QuestionRequest
+		if(msgType == 8) {
+			System.out.println("Vor TimerTask Erstellung");
+			TimerTask timerTask = new TimerTaskThread(session);
+			System.out.println("Vor Abfrage des Fragetexts");
+			Question curQuestion = quiz.requestQuestion(ConnectionManager.getPlayer(session), timerTask, quizError);
+			if(curQuestion != null)
+			{
+				System.out.println("Question Text:" + curQuestion.getQuestion());
 			}
 		}
 		ConnectionManager.printall();
@@ -153,18 +194,13 @@ public class ExchangeEndpoint {
 		for(Player entry : tmpPlayer) {
 			JSONObject tmp = new JSONObject();
 			tmp.put("Spielername", entry.getName());
+			System.out.println("Spieler: "+entry.getName());
 			tmp.put("Punktestand", entry.getScore());
 			tmp.put("ClientID", entry.getId());
 			players.add(tmp);
 		}
 		playerList.put("Players", players);
 		
-		// Alle aktuell angemeldeten SpielerSessions durchgehen
-		Set<Session> tmpMap = ConnectionManager.getSessions();
-		for(Iterator<Session> iter = tmpMap.iterator(); iter.hasNext(); ) {
-			Session s = iter.next();
-			// PlayerList message
-			this.sendJSON(s, playerList);
-		}
+		sendToAllSessions(playerList);
 	}
 }
