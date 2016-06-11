@@ -24,6 +24,7 @@ public class TimerTaskThread extends TimerTask {
 	@Override
 	public void run() {
 		// Sende Timeout Message
+		System.out.println("Im Timer Task");
 		Quiz quiz = Quiz.getInstance();
 		QuizError quizError = new QuizError(); 
 		if(quiz.answerQuestion(ConnectionManager.getPlayer(session), 4, quizError) == -1){

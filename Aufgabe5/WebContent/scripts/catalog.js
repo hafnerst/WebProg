@@ -32,7 +32,7 @@ function catalogListener(){
 }
 
 function changeCatalog(selectedCat){
-	if(clientid == 0)
+	if(clientid == 0 && gameStarted == false)
 	{
 		selectedCat.style.backgroundColor = "#f8a316";
 		

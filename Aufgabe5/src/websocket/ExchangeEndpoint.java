@@ -28,6 +28,7 @@ import thread.TimerTaskThread;
 public class ExchangeEndpoint {
 	private Quiz quiz = Quiz.getInstance();
 	private QuizError quizError = new QuizError();
+	private Thread playerBroadcast = new BroadcastThread();
 	
 	//Wird beim Anmelden eines Clients aufgerufen
 	@OnOpen
@@ -43,9 +44,10 @@ public class ExchangeEndpoint {
 			sendToAllSessions(catalogChange);
 		}
 		if(ConnectionManager.getSessionCount() < 4) {
-			sendPlayerlist();
+			if(!playerBroadcast.isAlive()) {
+				playerBroadcast.start();
+			}
 		}
-		System.out.println("In Open Funktion");
 	}
 	
 	@OnClose
@@ -67,7 +69,10 @@ public class ExchangeEndpoint {
 				ConnectionManager.removeSession(session);
 			}
 		}
-		this.sendPlayerlist();
+		if(!playerBroadcast.isAlive()) {
+			playerBroadcast = new BroadcastThread();
+			playerBroadcast.start();
+		} 
 	}
 
 	@OnMessage
@@ -79,7 +84,6 @@ public class ExchangeEndpoint {
 
 
 		int msgType = Integer.parseInt((String) jsonMessage.get("Type"));
-		System.out.println("Nachricht von Client: " + jsonMessage);
 	
 		// Message vom Type: LoginRequest
 		if(msgType == 1) {
@@ -107,8 +111,11 @@ public class ExchangeEndpoint {
 						ConnectionManager.addSession(session, tmpPlayer);
 						ConnectionManager.removeTmpSession(session);
 						sendJSON(session, player);
-						sendPlayerlist();
-						System.out.println("Spieler erstellt");
+						// Playerliste senden
+						if(!playerBroadcast.isAlive()) {
+							playerBroadcast = new BroadcastThread();
+							playerBroadcast.start();
+						} 
 					}
 				} else { // kein Username eingegeben
 					JSONObject error = new JSONObject();
@@ -131,31 +138,64 @@ public class ExchangeEndpoint {
 		}
 		//StartGame Message
 		if(msgType == 7) {
-			//quiz.startGame(ConnectionManager.getPlayer(session), quizError);
-			//if(quiz.startGame(ConnectionManager.getPlayer(session), quizError))
-			//{
+			if(quiz.startGame(ConnectionManager.getPlayer(session), quizError))
+			{
+				System.out.println("Spiel gestartet!");
 				JSONObject gameStarted = new JSONObject();
 				gameStarted.put("Type", "7");
 				gameStarted.put("Length", jsonMessage.get("Length").toString());
 				gameStarted.put("Message", jsonMessage.get("Message"));
 				sendToAllSessions(gameStarted);
-			/*}
+			}
 			else
 			{
 				System.out.println("Game konnte nicht gestartet werden!");
-			}*/
+			}
 		}
 		//QuestionRequest
 		if(msgType == 8) {
 			System.out.println("Vor TimerTask Erstellung");
 			TimerTask timerTask = new TimerTaskThread(session);
 			System.out.println("Vor Abfrage des Fragetexts");
+			
 			Question curQuestion = quiz.requestQuestion(ConnectionManager.getPlayer(session), timerTask, quizError);
 			if(curQuestion != null)
 			{
-				System.out.println("Question Text:" + curQuestion.getQuestion());
+				JSONObject jsonQuestion = new JSONObject();
+				jsonQuestion.put("Type", "9");
+				jsonQuestion.put("Length", "769");
+				jsonQuestion.put("Frage", curQuestion.getQuestion());
+				JSONArray arrAnswer = new JSONArray();
+				for (String tempAnswer : curQuestion.getAnswerList()) {
+					arrAnswer.add(tempAnswer);
+				}
+				jsonQuestion.put("arrAnswer", arrAnswer);
+				jsonQuestion.put("Zeitlimit", curQuestion.getTimeout());
+				sendJSON(session, jsonQuestion);
+			}
+			else
+			{
+				System.out.println("Question leider leer :(");
 			}
 		}
+		
+		if(msgType == 10) {
+			System.out.println("Empfange Antwort");
+			Long index = Long.parseLong((String) jsonMessage.get("Selection").toString());
+			Long correctAnswer = quiz.answerQuestion(ConnectionManager.getPlayer(session), index, quizError);
+			if(correctAnswer != -1) {
+				JSONObject questionResult = new JSONObject();
+				questionResult.put("Type", "11");
+				questionResult.put("Length", "2");
+				questionResult.put("TimedOut", "0");
+				questionResult.put("Correct", correctAnswer.toString());
+				sendJSON(session, questionResult);
+			}
+		}
+		if(!playerBroadcast.isAlive()) {
+			playerBroadcast = new BroadcastThread();
+			playerBroadcast.start();
+		} 
 		ConnectionManager.printall();
 	} 
 	
@@ -184,23 +224,51 @@ public class ExchangeEndpoint {
 			}
 		}
 	}
-	
-	private void sendPlayerlist() {
-		JSONObject playerList = new JSONObject();
-		playerList.put("Type", "6");
-		playerList.put("Length", ConnectionManager.getSessionCount() * 37);
-		Collection<Player> tmpPlayer = ConnectionManager.getPlayers();
-		JSONArray players = new JSONArray();
-		for(Player entry : tmpPlayer) {
-			JSONObject tmp = new JSONObject();
-			tmp.put("Spielername", entry.getName());
-			System.out.println("Spieler: "+entry.getName());
-			tmp.put("Punktestand", entry.getScore());
-			tmp.put("ClientID", entry.getId());
-			players.add(tmp);
-		}
-		playerList.put("Players", players);
-		
-		sendToAllSessions(playerList);
-	}
+}
+
+class BroadcastThread extends Thread {
+    private ExchangeEndpoint playerEndpoint;
+
+    BroadcastThread() {}
+    
+    @SuppressWarnings("unchecked")
+	public void run() {
+    	System.out.println("--------------------------------------------------------------");
+    	System.out.println("PlayerBroadcastThread:");
+    	ConnectionManager.printall();
+    	System.out.println("---------------------------------------------------------------");
+    	// PlayerList vorbereiten und verschicken
+    	System.out.println("SessionCount: " + ConnectionManager.getSessionCount());
+    	if(ConnectionManager.getSessionCount() > 0) {
+    		JSONObject playerList = new JSONObject();
+    		playerList.put("Type", "6");
+    		playerList.put("Length", ConnectionManager.getSessionCount() * 37);
+    		Collection<Player> tmpPlayer = ConnectionManager.getPlayers();
+    		JSONArray players = new JSONArray();
+    		for(Player entry : tmpPlayer) {
+    			JSONObject tmp = new JSONObject();
+    			tmp.put("Spielername", entry.getName());
+    			tmp.put("Punktestand", entry.getScore());
+    			tmp.put("ClientID", entry.getId());
+    			players.add(tmp);
+    		}
+    		playerList.put("Players", players);
+    		
+    		// Alle aktuell angemeldeten SpielerSessions durchgehen
+    		Set<Session> tmpMap = ConnectionManager.getSessions();
+    		for(Iterator<Session> iter = tmpMap.iterator(); iter.hasNext(); ) {
+    			Session s = iter.next();
+    			// PlayerList message
+    			ExchangeEndpoint.sendJSON(s, playerList);
+    		}
+    		
+    		// Alle temp Sessions durchgehen, um die Spielerliste aktuell anzuzeigen
+    		List<Session> tmpSessions = ConnectionManager.getTmpSessions();
+    		if(tmpSessions.size() > 0) {
+    			for (Session tempS : tmpSessions) {
+    				ExchangeEndpoint.sendJSON(tempS, playerList);
+    			}
+    		}
+    	}
+    }	
 }

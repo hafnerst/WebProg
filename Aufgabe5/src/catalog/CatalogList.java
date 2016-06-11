@@ -37,12 +37,8 @@ public class CatalogList extends HttpServlet
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
 		Quiz quiz = Quiz.getInstance();
-		
 		Map<String, Catalog> catalogMap = null;
 
-		FilesystemLoader fileLoader = new FilesystemLoader("xml");
-		quiz.initCatalogLoader(fileLoader);
-		
 		try 
 		{
 			catalogMap =  quiz.getCatalogList();

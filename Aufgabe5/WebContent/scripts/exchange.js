@@ -2,6 +2,12 @@ var websocket;
 var clientid = -1;
 var numberOfPlayers = 0;
 var gameStarted = false;
+var curSelection = -2;
+var queCell1;
+var queCell2;
+var queCell3;
+var queCell4;
+var firstRound = true;
 
 function createWebsocket() {
 	var uri = "ws://"+document.location.host+"/Aufgabe5/chat";
@@ -55,6 +61,17 @@ function receivedMessage(message) {
 		if(clientid != 0) {
 			var loginDiv = document.getElementById("login");
 			loginDiv.parentNode.removeChild(loginDiv);
+			var mainDiv = document.getElementById("main");
+			var div = document.createElement("waitText");
+			div.id = "waitText";
+			var t = document.createTextNode("Warten auf Spielbeginn!");
+			div.appendChild(t);
+			mainDiv.appendChild(div);
+		}
+		else
+		{
+			document.getElementById("input").disabled = true;
+			document.getElementById("buttonLogin").disabled = true;
 		}
 	}
 	
@@ -145,21 +162,179 @@ function receivedMessage(message) {
 		console.log("QuestionRequest gesendet!");
 	}
 	
+	if(msgFromServer.Type == 9) {
+		console.log("In Funktion 9");
+		if(msgFromServer.Length == 769)
+		{
+			if(firstRound == true) {
+				if(clientid == 0) {
+					var login = document.getElementById("login");
+					login.parentElement.removeChild(login);
+				}
+				else {
+					var waitText = document.getElementById("waitText");
+					waitText.parentElement.removeChild(waitText);
+				}
+			}
+			firstRound = false;
+			//Neuen div für die Fragen anlegen und eine ID vergeben
+			var questiondiv = document.createElement("questions");
+			
+			questiondiv.id = "questionwindow";
+			
+			if(document.getElementById("questionTable")!=null) {
+				var table = document.getElementById("questionTable");
+				table.parentElement.removeChild(table);
+			}
+			
+			//Neue Tabelle anlegen und mit Reihen, Zellen und Werten füllen
+			var queTable = document.createElement("table");
+			queTable.id = "questionTable";
+			var queRow0 = queTable.insertRow(0);
+			var queRow1 = queTable.insertRow(1);
+			var queRow2 = queTable.insertRow(2);
+			
+			var queCell0 = queRow0.insertCell(0);
+			queCell0.setAttribute("colspan",2);
+
+			queCell1 = queRow1.insertCell(0);
+			queCell2 = queRow1.insertCell(1);
+			queCell3 = queRow2.insertCell(0);
+			queCell4 = queRow2.insertCell(1);
+			
+			queCell0.innerHTML = msgFromServer.Frage;
+			
+			queCell1.innerHTML = "A: "+msgFromServer.arrAnswer[0];
+			queCell1.id = "0";
+			queCell1.addEventListener("mouseover", mouseOverListener);
+			queCell1.addEventListener("mouseout", mouseOutListener);
+			queCell1.addEventListener("click", mouseClickListener);
+			
+			queCell2.innerHTML = "B: "+msgFromServer.arrAnswer[1];
+			queCell2.id = "1";
+			queCell2.addEventListener("mouseover", mouseOverListener);
+			queCell2.addEventListener("mouseout", mouseOutListener);
+			queCell2.addEventListener("click", mouseClickListener);
+			
+			queCell3.innerHTML = "C: "+msgFromServer.arrAnswer[2];
+			queCell3.id = "2";
+			queCell3.addEventListener("mouseover", mouseOverListener);
+			queCell3.addEventListener("mouseout", mouseOutListener);
+			queCell3.addEventListener("click", mouseClickListener);
+			
+			queCell4.innerHTML = "D: "+msgFromServer.arrAnswer[3];
+			queCell4.id = "3";
+			queCell4.addEventListener("mouseover", mouseOverListener);
+			queCell4.addEventListener("mouseout", mouseOutListener);
+			queCell4.addEventListener("click", mouseClickListener);
+			
+			questiondiv.appendChild(queTable);
+			
+			var position = document.getElementById("main");
+			position.appendChild(questiondiv);
+		}
+		// Keine Frage mehr vorhanden!
+		else {
+			var endDiv = document.createElement("endDiv");
+			var mainDiv = document.getElementById("main");
+			questiondiv.id = "endDiv";
+			
+			var t = document.createTextNode("Alle Fragen beantwortet!");
+
+			endDiv.appendChild(t);
+			mainDiv.appendChild(endDiv);
+		}
+		
+	}
+	
+	if(msgFromServer.Type == 11) {
+		correctAnswer = msgFromServer.Correct;
+		if(correctAnswer != -1) {
+			var correctCell = document.getElementById(correctAnswer);
+			correctCell.style.background = "green";
+			if(curSelection != correctAnswer) {
+				var falseCell = document.getElementById(curSelection);
+				correctCell.style.background = "red";
+			}
+			
+			// Entfernen der Listener
+			queCell1.removeEventListener("mouseover", mouseOverListener);
+			queCell1.removeEventListener("mouseout", mouseOutListener);
+			queCell1.removeEventListener("click", mouseClickListener);
+			
+			queCell2.removeEventListener("mouseover", mouseOverListener);
+			queCell2.removeEventListener("mouseout", mouseOutListener);
+			queCell2.removeEventListener("click", mouseClickListener);
+			
+			queCell3.removeEventListener("mouseover", mouseOverListener);
+			queCell3.removeEventListener("mouseout", mouseOutListener);
+			queCell3.removeEventListener("click", mouseClickListener);
+			
+			queCell4.removeEventListener("mouseover", mouseOverListener);
+			queCell4.removeEventListener("mouseout", mouseOutListener);
+			queCell4.removeEventListener("click", mouseClickListener);
+		}
+		else {
+			alert("Zeit abgelaufen!");
+		}
+		
+		// 3 Sekunden warten -> die Hintergrundfarbe auf Standard
+		setTimeout(function() {
+			for(var i = 0; i < 4; i++) {
+				var answers = document.getElementById(i);
+				answers.style.backgroundColor = "white";
+			}
+			// eine neue Frage holen
+			var questionRequest = {
+					"Type": "8",
+					"Length" : "0"
+				};
+			websocket.send(JSON.stringify(questionRequest));
+		}, 3000);
+	}
+	
 	if(msgFromServer.Type == 255) {
 		console.log("Message: "+ msgFromServer.Message);
 	}
 }
 
 function startGame() {
-	console.log("spiel wird gestartet");
-	var startGame = { 
-			"Type" : "7",
-			"Length" : curCat.textContent.length,
-			"Message" : curCat.textContent
+	if(curCat != null) {
+		console.log("spiel wird gestartet");
+		var startGame = { 
+				"Type" : "7",
+				"Length" : curCat.textContent.length,
+				"Message" : curCat.textContent
+		}
+		websocket.send(JSON.stringify(startGame));
+		console.log("Spielnachricht wurde versandt!");
+		gameStarted = true;
 	}
-	websocket.send(JSON.stringify(startGame));
-	console.log("Spielnachricht wurde versandt!");
-	gameStarted = true;
+	else {
+		alert("Kein Katalog ausgewählt!");
+	}
+}
+
+//Antwortenlistener
+function mouseClickListener(event) {
+	event.target.style.background = "#f8a316";
+	var questionAnswered = {
+			"Type": "10",
+			"Length" : "1",
+			"Selection" : event.target.id
+		};
+	curSelection = event.target.id;
+	
+	console.log("Sende QuestionAnswered");
+	websocket.send(JSON.stringify(questionAnswered));
+}
+
+function mouseOverListener(event) {
+	event.target.style.background = "grey";
+}
+
+function mouseOutListener(event) {
+	event.target.style.background = "white";
 }
 
 function sendCurCatalog() {

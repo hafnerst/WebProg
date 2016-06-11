@@ -6,12 +6,16 @@ import org.jdom2.input.SAXBuilder;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileNotFoundException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
@@ -127,7 +131,6 @@ public class FilesystemLoader implements CatalogLoader {
 
         private final File catalogFile;
         private final List <Question> questions = new ArrayList<Question>();
-        private final static int numberOfAnswers = 4;
 
         public QuestionFileLoader(File file) {
             catalogFile = file;
@@ -136,46 +139,53 @@ public class FilesystemLoader implements CatalogLoader {
         public List<Question> getQuestions(Catalog catalog)
             throws LoaderException {
         	
-        	Document doc = null;
+        	System.out.println("Katalog: "+catalog.getName());
 
             if (!questions.isEmpty()) {
                 return questions;
             }
-            
-            String filename = directory+catalog.getName();
-            System.out.println("Verzeichnis: "+ filename);
-            try {
-            	System.out.println("vor SAX");
-            	doc = new SAXBuilder().build( filename );	//JDOM-Dokument mit Hilfe von SAXBuilder erstellen
-            	System.out.println("nach SAX");
-            }
-            catch(Exception e){
-    			e.printStackTrace();
-    		}
-            
-            Element curCatalog = doc.getRootElement();			//Wurzel-Element abfragen
-    		List<Element> questionList = curCatalog.getChildren();			//JDOM-Baum in Liste speichern
-    		
-    		for(int i =0; i<questionList.size(); i++)		//Durchlaufe jede Frage
-    		{
-    			Question curQuestion = new Question(questionList.get(i).getChild("title").getAttributeValue("text"));
-    			for(int j=0; j<numberOfAnswers; j++)	//Durchlaufe alle Antworten
-    			{
-    				if(questionList.get(i).getChild("answers").getChild("answer"+(j+1)).getAttributeValue("correct").equals("true"))
-    				{
-    					//Füge richtige Antwort zu Objekt Question hinzu
-    					curQuestion.addAnswer(questionList.get(i).getChild("answers").getChild("answer"+(j+1)).getAttributeValue("answertext"));
-    				}
-    				else
-    				{
-    					//Füge falsche Antwort zu Objekt Question hinzu
-    					curQuestion.addBogusAnswer(questionList.get(i).getChild("answers").getChild("answer"+(j+1)).getAttributeValue("answertext"));
-    				}
-    			}
-    			//Füge aktuelle Question zur questionlist hinzu
-    			questions.add(curQuestion);
-    		}
 
+            Scanner scanner;
+            try {
+                scanner = new Scanner(catalogFile, "UTF-8");
+            } catch (FileNotFoundException e) {
+                throw new LoaderException();
+            }
+
+            // Search the whole file for questions
+            for (String questionBlock = scanner.findWithinHorizon(blockPattern, 0);
+                 questionBlock != null;
+                 questionBlock = scanner.findWithinHorizon(blockPattern, 0)) {
+
+                MatchResult m = scanner.match();
+                Question question = new Question(m.group(1));
+
+                // The 2nd group is optional
+                if (m.group(2) != null) {
+                    question.setTimeout(
+                        new Integer(m.group(2)));
+                }
+
+                // Match the answers
+                Matcher am = questionPattern.matcher(m.group(3));
+                while (am.find()) {
+                    if (am.group(1).equals("+")) {
+                        question.addAnswer(am.group(2));
+                    } else {
+                        question.addBogusAnswer(am.group(2));
+                    }
+                }
+
+                // Make sure the question is complete
+                if (question.isComplete())
+                    // Add some randomization
+                    question.shuffleAnswers();
+                    questions.add(question);
+            }
+            System.out.println("Ausgabe Fragen");
+            for(Question question : questions) {
+            	System.out.println("Frage: "+question.getQuestion());
+            }
             return questions;
         }
 
