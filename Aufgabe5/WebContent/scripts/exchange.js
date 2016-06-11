@@ -8,6 +8,8 @@ var queCell2;
 var queCell3;
 var queCell4;
 var firstRound = true;
+var playerTable;
+
 
 function createWebsocket() {
 	var uri = "ws://"+document.location.host+"/Aufgabe5/chat";
@@ -103,7 +105,7 @@ function receivedMessage(message) {
 		if(gameStarted == false) {
 			checkIfEnoughPlayer();
 		}
-		
+		/*
 		var playerTable = document.getElementById("playerTable");
 		//playerTable.parentNode.removeChild(playerTable);
 		console.log("Vorher: "+playerTable.rows.length);
@@ -132,8 +134,23 @@ function receivedMessage(message) {
 		{
 			playerTable.deleteRow(2);
 			playerTable.deleteRow(1);
-		}
-
+		}*/
+	
+		playerTable = document.getElementById("playerTable");
+		playerTable.parentElement.removeChild(playerTable);
+	
+		playerTable = document.createElement("table");
+		playerTable.id = "playerTable";
+		var plHeader = playerTable.createTHead(0);
+		var plRow0 = plHeader.insertRow(0);
+		var plCell0 = plRow0.insertCell(0);
+		var plCell1 = plRow0.insertCell(1);
+		plCell0.innerHTML = "<b>Player</b>";
+		plCell1.innerHTML = "<b>Score</b>";
+		
+		var highscore = document.getElementById("highscore");
+		highscore.appendChild(playerTable);
+		
 		console.log("Nachher: "+playerTable.rows.length);
 
 		
@@ -295,6 +312,8 @@ function receivedMessage(message) {
 	
 	if(msgFromServer.Type == 255) {
 		console.log("Message: "+ msgFromServer.Message);
+		var errorText = msgFromServer.Message;
+		alert(errorText);
 	}
 }
 

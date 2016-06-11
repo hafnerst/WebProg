@@ -90,6 +90,12 @@ public class ExchangeEndpoint {
 			if(ConnectionManager.getSessionCount() >= 4)
 			{
 				System.out.println("Maximale Spielerzahl");
+				JSONObject error = new JSONObject();
+				error.put("Type", "255");
+				error.put("Length", 1 + quizError.getDescription().length());
+				error.put("Subtype", "1");
+				error.put("Message", "Maximale Spielerzahl erreicht!");
+				sendJSON(session, error);
 			}
 			else {
 				int msgLength = Integer.parseInt((String) jsonMessage.get("Length").toString());
